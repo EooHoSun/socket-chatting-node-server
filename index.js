@@ -3,32 +3,42 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http');
-
+const https = require('https');
+const router = express.Router();
 
 const app = express();
-app.use(cors);
-
-app.get('/', (req, res) => {
-    console.log(req);
-});
-
 const port = 5000;
-const server = http.createServer(app);
-server.listen(port, () => {
-    console.log('server start');
+app.get('/',  (req, res) => {
+    console.log(req);
+    res.header("Access-Control-Allow-Origin", "*");
+    console.log(req);
+    return res.json("wef");
 });
+const server = http.createServer(app);
 
-const io = socket(server);
+
+
+
+const io = socket(server,{
+    cors:{
+        origin:"*",
+        method:["GET","POST"],
+    }
+});
 let idx = 0;
+
 io.sockets.on('connection', (socket) => {
     idx++;
     console.log(`[${socket.id}] : ${socket.handshake.time}`);
     console.log(`connection!!${idx}`);
+
+
     socket.on('toServer', (data) => {
-        data.name = socket.name;
-        console.log(data);
+        console.log("메시지 도착 : " , data);
         io.emit('toClient',data);
     });
+
+
     socket.on('send', (data) => {
         console.log('send 발생');
         console.log(data);
@@ -44,3 +54,6 @@ io.sockets.on('connection', (socket) => {
     });
 });
 
+server.listen(port, "localhost",5000, () => {
+    console.log('server start');
+});
